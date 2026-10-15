@@ -1,0 +1,10 @@
+This live image was built with linux-gaming-lab, an experimental,
+unofficial customization layer on top of CachyOS-Live-ISO.
+
+It is not an official CachyOS image and is not supported by the CachyOS team.
+
+  Project:  https://github.com/ralleur/linux-gaming-lab
+  Upstream: https://github.com/CachyOS/CachyOS-Live-ISO
+
+The file build-info next to this README records the exact project revision,
+upstream commit, profile, overlays and patches used for this image.

@@ -1,0 +1,110 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+# Static validation, tests and upstream reference checks.
+# Builds no ISO and publishes nothing (see docs/redistribution.md).
+
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  SHELLCHECK_VERSION: v0.11.0
+  SHELLCHECK_SHA256: 8c3be12b05d5c177a04c29e3c78ce89ac86f1595681cab149b65b97c4e227198
+  ACTIONLINT_IMAGE: docker.io/rhysd/actionlint:1.7.12@sha256:b1934ee5f1c509618f2508e6eb47ee0d3520686341fec936f3b79331f9315667
+
+jobs:
+  validate:
+    name: Validate repository
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Check out
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Install shellcheck ${{ env.SHELLCHECK_VERSION }}
+        run: |
+          curl -fsSLo "$RUNNER_TEMP/shellcheck.tar.xz" \
+            "https://github.com/koalaman/shellcheck/releases/download/${SHELLCHECK_VERSION}/shellcheck-${SHELLCHECK_VERSION}.linux.x86_64.tar.xz"
+          echo "${SHELLCHECK_SHA256}  $RUNNER_TEMP/shellcheck.tar.xz" | sha256sum -c -
+          tar -xJf "$RUNNER_TEMP/shellcheck.tar.xz" -C "$RUNNER_TEMP"
+          sudo install -m 0755 "$RUNNER_TEMP/shellcheck-${SHELLCHECK_VERSION}/shellcheck" /usr/local/bin/shellcheck
+          shellcheck --version
+
+      - name: Validate structure, configuration, scripts and docs
+        run: scripts/validate.sh --strict
+
+      - name: Lint GitHub workflows (actionlint)
+        run: docker run --rm --volume "$PWD:/repo" --workdir /repo "$ACTIONLINT_IMAGE" -color
+
+  tests:
+    name: Tests (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        # macOS runs the host-side scripts with the system bash 3.2.
+        os: [ubuntu-24.04, macos-15]
+    steps:
+      - name: Check out
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Use the system bash on macOS
+        if: runner.os == 'macOS'
+        run: echo "/bin" >> "$GITHUB_PATH"
+
+      - name: Run tests
+        run: |
+          bash --version | head -n 1
+          tests/run.sh
+
+  upstream:
+    name: Upstream reference
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Check out
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Fetch and verify the pinned upstream commit
+        run: scripts/bootstrap.sh --verify-branch
+
+      - name: Assemble every profile against the pinned upstream
+        run: |
+          for dir in profiles/*/; do
+            scripts/prepare.sh "$(basename "$dir")"
+          done
+
+      - name: Job summary
+        if: always()
+        run: |
+          {
+            echo "### Upstream pin"
+            echo '```'
+            grep -v '^#' config/upstream.lock | grep -v '^$'
+            echo '```'
+            for manifest in build/*/manifest.txt; do
+              [ -f "$manifest" ] || continue
+              echo "### $(dirname "$manifest" | xargs basename)"
+              echo '```'
+              cat "$manifest"
+              echo '```'
+            done
+          } >> "$GITHUB_STEP_SUMMARY"

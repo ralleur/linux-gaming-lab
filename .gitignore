@@ -1,0 +1,30 @@
+# Build trees, outputs and caches (see docs/build.md)
+/build/
+/out/
+/.cache/
+
+# Images and VM disks
+*.iso
+*.img
+*.qcow2
+*.vdi
+*.sig
+*.sha1
+*.sha256
+*.pkgs.txt
+
+# Keys, credentials and local settings - never commit these
+*.key
+*.pem
+*.p12
+*.gpg
+*.asc
+.env
+.env.*
+
+# Editors and OS noise
+*~
+*.swp
+.DS_Store
+.idea/
+.vscode/

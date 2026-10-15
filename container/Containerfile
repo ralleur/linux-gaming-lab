@@ -1,0 +1,77 @@
+# check=skip=InvalidDefaultArgInFrom,FromPlatformFlagConstDisallowed,SecretsUsedInArgOrEnv
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+# Isolated ISO build environment for linux-gaming-lab.
+#
+# It reproduces the environment of upstream's official CI build
+# (CachyOS-Live-ISO .github/workflows/build.yml): Arch Linux base-devel,
+# the CachyOS signing key, the [cachyos] repository and archiso.
+#
+# All build arguments come from config/build-env.conf; build it with
+# scripts/build-in-container.sh (or pass the same --build-arg values).
+
+ARG BASE_IMAGE
+FROM --platform=linux/amd64 ${BASE_IMAGE}
+
+ARG CACHYOS_KEY_FPR
+ARG CACHYOS_KEYSERVER
+ARG CACHYOS_MIRROR
+ARG BUILDER_UID=1000
+
+LABEL org.opencontainers.image.title="linux-gaming-lab build environment" \
+      org.opencontainers.image.source="https://github.com/ralleur/linux-gaming-lab" \
+      org.opencontainers.image.licenses="GPL-3.0-or-later"
+
+# Trust the CachyOS signing key by full fingerprint and enable the [cachyos]
+# repository in front of [core], exactly like upstream's CI does.
+#
+# The Arch image already sets DisableSandboxFilesystem. pacman's syscall
+# filter additionally fails under x86_64 emulation (e.g. Docker on Apple
+# Silicon: "error restricting syscalls via seccomp: 22"), so it is disabled
+# too. The container is the isolation boundary here, and upstream's
+# archiso/pacman.conf (used for the ISO itself) sets DisableSandbox anyway.
+RUN set -eux; \
+    if grep -q '^#DisableSandboxSyscalls$' /etc/pacman.conf; then \
+        sed -i 's/^#DisableSandboxSyscalls$/DisableSandboxSyscalls/' /etc/pacman.conf; \
+    elif ! grep -qE '^DisableSandbox(Syscalls)?$' /etc/pacman.conf; then \
+        sed -i '0,/^\[options\]$/s//[options]\nDisableSandboxSyscalls/' /etc/pacman.conf; \
+    fi; \
+    grep -qE '^DisableSandbox(Syscalls)?$' /etc/pacman.conf; \
+    test -n "${CACHYOS_KEY_FPR}"; \
+    test -n "${CACHYOS_KEYSERVER}"; \
+    test -n "${CACHYOS_MIRROR}"; \
+    pacman-key --init; \
+    pacman-key --keyserver "${CACHYOS_KEYSERVER}" --recv-keys "${CACHYOS_KEY_FPR}"; \
+    pacman-key --lsign-key "${CACHYOS_KEY_FPR}"; \
+    MIRROR="${CACHYOS_MIRROR}" awk \
+        '/^\[core\]$/ { printf "[cachyos]\nServer = %s\n\n", ENVIRON["MIRROR"] } { print }' \
+        /etc/pacman.conf > /tmp/pacman.conf; \
+    cat /tmp/pacman.conf > /etc/pacman.conf; \
+    rm /tmp/pacman.conf; \
+    grep -q '^\[cachyos\]$' /etc/pacman.conf
+
+# Build dependencies (upstream README + CI), plus what our scripts use.
+RUN set -eux; \
+    pacman -Syu --noconfirm --needed \
+        archiso cachyos-keyring mkinitcpio-archiso squashfs-tools grub \
+        git sudo curl; \
+    pacman-key --populate cachyos; \
+    rm -rf /var/cache/pacman/pkg/*; \
+    git config --system --add safe.directory '*'
+
+# Unprivileged build user with passwordless sudo, as upstream's buildiso.sh
+# expects (it calls sudo itself).
+RUN set -eux; \
+    if [ "${BUILDER_UID}" = 0 ] || getent passwd "${BUILDER_UID}" >/dev/null; then \
+        useradd --create-home builder; \
+    else \
+        useradd --create-home --uid "${BUILDER_UID}" builder; \
+    fi; \
+    printf 'builder ALL=(ALL) NOPASSWD: ALL\n' > /etc/sudoers.d/builder; \
+    chmod 0440 /etc/sudoers.d/builder; \
+    install -d -o builder -g builder /var/lib/linux-gaming-lab/work
+
+ENV USER=builder \
+    LGL_WORK_DIR=/var/lib/linux-gaming-lab/work
+USER builder
+WORKDIR /workspace

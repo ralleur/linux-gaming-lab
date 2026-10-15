@@ -1,0 +1,16 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+# Pinned upstream reference for linux-gaming-lab.
+#
+# Format: KEY=value, one per line, no quotes, no spaces around '='.
+# This file is parsed (never sourced) by scripts/lib/common.sh and checked by
+# scripts/validate.sh. Change it only with scripts/update-upstream.sh so that
+# commit, tree and date always stay consistent (see docs/upstream.md).
+
+UPSTREAM_NAME=CachyOS-Live-ISO
+UPSTREAM_URL=https://github.com/CachyOS/CachyOS-Live-ISO.git
+UPSTREAM_BRANCH=master
+UPSTREAM_COMMIT=3215497d2e8c5fea90e185affcf973dfa2cf790b
+UPSTREAM_TREE=f227aced36bfa594beceac2326267a7e71be8751
+UPSTREAM_COMMIT_DATE=2026-10-03T18:31:30+03:00
+UPSTREAM_SUBJECT=Replace nvidia-module-loader with cachyos-drm-awaiter

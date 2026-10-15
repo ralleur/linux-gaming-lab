@@ -1,0 +1,48 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+# Builds the isolated build environment (container/Containerfile), checks it
+# with scripts/build.sh --check and assembles the default profile inside it.
+# Runs no mkarchiso: the full ISO build workflow is tracked separately
+# (docs/roadmap.md) and must never publish ISO images (docs/redistribution.md).
+
+name: Build environment
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - container/**
+      - config/**
+      - scripts/**
+      - .github/workflows/build-env.yml
+  pull_request:
+    paths:
+      - container/**
+      - config/**
+      - scripts/**
+      - .github/workflows/build-env.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: build-env-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-env:
+    name: Build and check build environment
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - name: Check out
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Build image and check the environment
+        run: scripts/build-in-container.sh --engine docker --check
+
+      - name: Assemble the default profile in the build environment
+        run: scripts/build-in-container.sh --engine docker --prepare-only default
