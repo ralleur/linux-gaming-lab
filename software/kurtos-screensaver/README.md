@@ -2,7 +2,7 @@
 
 A fullscreen screensaver for Linux. It shows the eight bars of the ralleur mark on true black and plays short physical acts: arrival, burst, rain, shuffle, wave, migrate and snake. It is a C port of the ralleur macOS screensaver (Swift), with an SDL3 frontend for Wayland and X11.
 
-Not part of the ISO build yet. The repository has no mechanism for shipping its own software ([docs/development.md](../../docs/development.md)), so this directory only holds the source.
+> **Source only, not built or shipped yet.** Nothing here enters the ISO or an installed system. How own software gets into the image is still open: it needs its own package and repository ([docs/architecture.md](../../docs/architecture.md), section 4). Packaging (a PKGBUILD) and integration come later.
 
 ## Build and run
 
