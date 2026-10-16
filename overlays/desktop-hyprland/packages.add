@@ -1,0 +1,4 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# CachyOS Hyprland edition: Hyprland, the noctalia shell and CachyOS's
+# default configuration in /etc/skel (pulls in all further dependencies).
+cachyos-hypr-noctalia

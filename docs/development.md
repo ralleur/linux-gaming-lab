@@ -1,7 +1,8 @@
 # Developing customizations
 
 Start every change from an issue, keep it as small as possible, and prefer
-the least invasive mechanism.
+the least invasive mechanism. How changes get from a running system into
+this repository is described in [workflow.md](workflow.md).
 
 ## Where does my change go?
 

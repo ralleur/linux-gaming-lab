@@ -65,7 +65,7 @@ See [docs/build.md](docs/build.md) for requirements, macOS notes and how to test
 | `profiles/<name>/` | Build variants: upstream buildset, overlay modules, package changes |
 | `overlays/<module>/` | Files added to the live system (`airootfs/`) plus package changes |
 | `patches/` | Changes to upstream files, applied in order |
-| `scripts/` | `bootstrap`, `prepare`, `build`, `build-in-container`, `update-upstream`, `validate` |
+| `scripts/` | `bootstrap`, `prepare`, `build`, `build-in-container`, `update-upstream`, `validate`, `capture` |
 | `tests/` | Offline tests for the build tooling |
 | `docs/` | Architecture, build, upstream, development, redistribution, roadmap |
 
@@ -75,6 +75,7 @@ See [docs/build.md](docs/build.md) for requirements, macOS notes and how to test
 - [Building and testing](docs/build.md) — build environment, ISO build, VM tests
 - [Upstream tracking](docs/upstream.md) — pinning, updates, patches
 - [Developing customizations](docs/development.md) — profiles, overlays, packages
+- [Workflow](docs/workflow.md) — from an idea on the reference system to the repository
 - [Redistribution and licensing](docs/redistribution.md) — **read before sharing any image**
 - [Roadmap](docs/roadmap.md)
 - [Contributing](CONTRIBUTING.md) · [Changelog](CHANGELOG.md)
