@@ -1,0 +1,18 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+# Paths (relative to $HOME, shell globs) that scripts/capture.sh never reports.
+# Only list files that are rewritten automatically or are personal by nature;
+# a customization you made by hand belongs in an overlay module instead.
+
+# Backup copies
+*.bak
+*~
+
+# Rewritten by noctalia from the wallpaper color scheme (theme templates)
+.config/kdeglobals
+.config/kitty/kitty.conf
+.config/alacritty/alacritty.toml
+.config/btop/btop.conf
+
+# Personal URL and file associations added by installed applications
+.config/mimeapps.list

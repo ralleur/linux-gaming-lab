@@ -18,6 +18,10 @@ been made yet.
 - Upstream update script with compatibility report and automatic rollback
   (`scripts/update-upstream.sh`).
 - Profile `default` (upstream desktop buildset) and overlay module `common`.
+- Workflow for trying customizations on a reference system and capturing
+  them (`docs/workflow.md`, `scripts/capture.sh`, `config/capture.ignore`).
+- Profile `hyprland` and overlay module `desktop-hyprland` (CachyOS
+  Hyprland edition with the noctalia shell) as the desktop base.
 - Repository validation (`scripts/validate.sh`) and offline tests (`tests/`).
 - CI workflows: validation, shellcheck, actionlint, tests on Linux and macOS,
   upstream reference check, build-environment check.
