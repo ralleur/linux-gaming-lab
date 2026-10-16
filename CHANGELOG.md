@@ -18,6 +18,8 @@ been made yet.
 - Upstream update script with compatibility report and automatic rollback
   (`scripts/update-upstream.sh`).
 - Profile `default` (upstream desktop buildset) and overlay module `common`.
+- `software/kurtos-screensaver`: fullscreen ralleur bar screensaver for Linux
+  (C port of the macOS saver, SDL3 frontend) and headless render tool.
 - Repository validation (`scripts/validate.sh`) and offline tests (`tests/`).
 - CI workflows: validation, shellcheck, actionlint, tests on Linux and macOS,
   upstream reference check, build-environment check.
